@@ -16,9 +16,11 @@
 #include <stdio.h>
 #include <string.h>
 
+// System storage limit and confidential admin password
 #define MAX 100
 #define ADMIN_PASS "4021"
 
+// Structure representing a single tour package
 typedef struct Tour
 {
     int packageID;
@@ -29,34 +31,40 @@ typedef struct Tour
     float price;       // Price per person
 } Tour;
 
+// Structure representing a registered customer
 typedef struct
 {
     int customerID;
     char name[50];
-    char phone[20];
+    char phone[20]; // Stored as string to preserve leading zeros
 } customer;
 
+// Input validation helpers
 void clearInput(void);
 int getInt(int min, int max);
 float getPrice(void);
 void getText(char text[]);
 
+// Tour package operations
 void addPackage(Tour[], int *count);
 void displayPackages(Tour[], int count);
 void searchPackage(Tour[], int count);
 void updatePackage(Tour[], int count);
 void deletePackage(Tour[], int *count);
 
+// Customer management operations
 int findCustomer(customer customers[], int customerCount, int id);
 void RegisterCustomer(customer customers[], int *customerCount);
 void viewCustomer(customer customers[], int customerCount);
 void deleteCustomer(customer customers[], int *customerCount);
 
+// Billing, budget finder, and admin portal
 float CalculateTotal(Tour *packages, int members, float *discount, float *tax);
 void BudgetFriendly(Tour packages[], int count);
 void generateBill(Tour packages[], int count, customer customers[], int customerCount);
 void adminViewAll(customer customers[], int customerCount, Tour packages[], int count);
 
+// File handling (save & load)
 int saveData(Tour[], int count);
 void loadData(Tour[], int *count);
 int saveCustomers(customer customers[], int customerCount);
@@ -69,11 +77,13 @@ int main(void)
     int count = 0;
     int customerCount = 0;
 
+    // Load previously saved packages and customers from files on startup
     loadData(packages, &count);
     loadCustomers(customers, &customerCount);
 
     int choice;
 
+    // Main menu loop: runs until user selects Save and Exit (12)
     do
     {
         printf("\n======= PAKISTAN TOUR AND TRAVEL MANAGEMENT SYSTEM =======\n");
@@ -93,6 +103,7 @@ int main(void)
         printf("Enter your choice (1-12): ");
         choice = getInt(1, 12);
 
+        // Route user's menu selection to the corresponding feature function
         switch (choice)
         {
         case 1:
@@ -129,6 +140,7 @@ int main(void)
             adminViewAll(customers, customerCount, packages, count);
             break;
         case 12:
+            // Save both packages and customers to text files before exiting
             if (saveData(packages, count))
                 printf("Packages saved successfully!\n");
             else
@@ -151,6 +163,7 @@ int main(void)
 void clearInput(void)
 {
     int ch;
+    // Discard characters one by one until newline or EOF is reached
     while ((ch = getchar()) != '\n' && ch != EOF)
     {
     }
@@ -163,6 +176,7 @@ int getInt(int min, int max)
     char ch;
     while (1)
     {
+        // Reject non-numeric input and clear buffer
         if (scanf("%d", &num) != 1)
         {
             printf("Invalid input! Enter an integer: ");
@@ -173,6 +187,7 @@ int getInt(int min, int max)
             ch = getchar();
             while (ch == ' ')    //It skips the spaces and reads the next character, which is Enter
                 ch = getchar();
+            // Reject trailing text (e.g., "12abc") and verify [min, max] bounds
             if (ch != '\n')
             {
                 printf("Invalid input! Enter again: ");
@@ -190,10 +205,12 @@ int getInt(int min, int max)
 void getText(char text[])
 {
     int i;
+    // Read up to 49 chars until newline and ensure only letters/spaces are entered
     do
     {
         scanf(" %49[^\n]", text);
         clearInput();
+        // Scan each character to reject digits or special symbols
         for (i = 0; text[i] != '\0'; i++)
         {
             if ((text[i] < 'A' || text[i] > 'Z') &&
@@ -215,6 +232,7 @@ float getPrice(void)
     char ch;
     while (1)
     {
+        // Ensure valid float format, no extra trailing characters, and price > 0
         if (scanf("%f", &price) != 1)
         {
             printf("Invalid price! Enter again: ");
@@ -240,6 +258,7 @@ float getPrice(void)
 void addPackage(Tour packages[], int *count)
 {
     char ch;
+    // Exit early if array capacity (MAX) is already full
     if (*count >= MAX)
     {
         printf("Package storage is full!\n");
@@ -252,6 +271,7 @@ void addPackage(Tour packages[], int *count)
         int duplicate;
         printf("\n=== Add Tour Package ===\n");
 
+        // Prompt for Package ID and loop until a unique ID is entered
         do
         {
             duplicate = 0;
@@ -269,6 +289,7 @@ void addPackage(Tour packages[], int *count)
             }
         } while (duplicate);
 
+        // Read package destination, duration, transport, accommodation, and price
         printf("Destination: ");
         getText(packages[i].destination);
 
@@ -278,6 +299,7 @@ void addPackage(Tour packages[], int *count)
         printf("Transport:\n 1- Train (5%% Discount)\n 2- Aeroplane (10%% Discount)\n 3- Bus (3%% Discount)\nChoice: ");
         packages[i].transport = getInt(1, 3);
 
+        // Confirm selected transport option on screen
         if (packages[i].transport == 1)
             printf("Mode Of Transport: Train\n");
         else if (packages[i].transport == 2)
@@ -288,6 +310,7 @@ void addPackage(Tour packages[], int *count)
         printf("Accommodation:\n 1- Budget Hotel\n 2- Standard Hotel\n 3- Luxury Hotel\nChoice: ");
         packages[i].accommodation = getInt(1, 3);
 
+        // Confirm selected accommodation tier on screen
         if (packages[i].accommodation == 1)
             printf("Accommodation: Budget Hotel\n");
         else if (packages[i].accommodation == 2)
@@ -298,6 +321,7 @@ void addPackage(Tour packages[], int *count)
         printf("Price per person (Rs.): ");
         packages[i].price = getPrice();
 
+        // Increment total package count and auto-save to packages.txt
         (*count)++;
         if(saveData(packages, *count)){
         printf("Package added and saved successfully!\n");
@@ -305,6 +329,7 @@ void addPackage(Tour packages[], int *count)
      else{
       printf("Package added but saving failed!\n");
        }
+        // Stop adding if storage limit is reached, otherwise ask to continue
         if (*count >= MAX)
         {
             printf("Storage is full!\n");
@@ -326,6 +351,7 @@ void displayPackages(Tour packages[], int count)
         return;
     }
 
+    // Iterate through all active packages and print formatted details
     printf("\n=== AVAILABLE TOUR PACKAGES ===\n");
     for (int i = 0; i < count; i++)
     {
@@ -333,6 +359,7 @@ void displayPackages(Tour packages[], int count)
         printf("Destination   : %s\n", packages[i].destination);
         printf("Days          : %d\n", packages[i].days);
 
+        // Convert numeric transport and accommodation codes into readable labels
         printf("Transport     : ");
         if (packages[i].transport == 1)
             printf("Train\n");
@@ -367,6 +394,7 @@ void searchPackage(Tour packages[], int count)
     printf("Enter package ID to search: ");
     packageID = getInt(1, 999999);
 
+    // Linear search through packages array for matching ID
     for (int i = 0; i < count; i++)
     {
         if (packageID == packages[i].packageID)
@@ -397,6 +425,7 @@ void searchPackage(Tour packages[], int count)
         }
     }
 
+    // Notify user if no package matched the entered ID
     if (found == 0)
     {
         printf("Package not found!\n");
@@ -422,6 +451,7 @@ void updatePackage(Tour packages[], int count)
         printf("Enter the package ID you want to update: ");
         ID = getInt(1, 999999);
 
+        // Locate target package index by ID
         for (i = 0; i < count; i++)
         {
             if (packages[i].packageID == ID)
@@ -435,6 +465,7 @@ void updatePackage(Tour packages[], int count)
         {
             printf("\n=== Update Package ===\n");
             int duplicate;
+            // Ensure new ID does not clash with other packages (j != i allows keeping current ID)
             do
             {
                 duplicate = 0;
@@ -452,6 +483,7 @@ void updatePackage(Tour packages[], int count)
                 }
             } while (duplicate);
 
+            // Overwrite remaining fields and save updated list to file
             printf("New Destination: ");
             getText(packages[i].destination);
 
@@ -476,9 +508,11 @@ else
     printf("Package updated but saving failed!\n");
 }
         }
+        // Inform user if the entered Package ID was not found
         else
             printf("ID doesn't exist!\n");
 
+        // Ask whether to update another package
         printf("Do you want to update more packages? (Y/N): ");
         scanf(" %c", &ch);
         clearInput();
@@ -503,6 +537,7 @@ void deletePackage(Tour packages[], int *count)
         printf("Enter Package ID to delete: ");
         id = getInt(1, 999999);
 
+        // Search for target package, shift trailing elements left, decrement count, and save
         for (i = 0; i < *count; i++)
         {
             if (packages[i].packageID == id)
@@ -524,6 +559,7 @@ else
             }
         }
 
+        // If ID was not found, offer the user a chance to retry
         if (found == 0)
         {
             printf("Package ID not found! Do you want to try again? (Y/N): ");
@@ -536,11 +572,13 @@ else
 /*----------- Searches for a customer ID and returns index (-1 if not found) -----------*/
 int findCustomer(customer customers[], int customerCount, int id)
 {
+    // Scan customer records sequentially and return matching array index
     for (int i = 0; i < customerCount; i++)
     {
         if (customers[i].customerID == id)
             return i;
     }
+    // Return -1 if no customer matched the given ID
     return -1;
 }
 
@@ -551,12 +589,14 @@ void RegisterCustomer(customer customers[], int *customerCount)
     char ch;
     do
     {
+        // Stop registration if maximum customer capacity is reached
         if (*customerCount >= MAX)
         {
             printf("Customer limit reached!\n");
             break;
         }
 
+        // Read Customer ID and reject duplicates using findCustomer()
         printf("\n===== REGISTER CUSTOMER =====\n");
         printf("Enter Customer ID: ");
         id = getInt(1, 999999);
@@ -570,18 +610,27 @@ void RegisterCustomer(customer customers[], int *customerCount)
         int i = *customerCount;
         customers[i].customerID = id;
 
+        // Read alphabetic customer name and validate digits-only phone number
         printf("Enter Customer Name: ");
         getText(customers[i].name);
-        
-         int j, valid;
 
-            do
+        int j, valid;
+
+        // Read full line, clear buffer, and verify a strict 11-digit phone number
+        do
+        {
+            valid = 1;
+
+            printf("Enter phone number (11 digits): ");
+            scanf(" %19[^\n]", customers[i].phone);
+            clearInput();
+
+            if (strlen(customers[i].phone) != 11)
             {
-                valid = 1;
-
-                printf("Enter phone number: ");
-                scanf("%19s", customers[i].phone);
-
+                valid = 0;
+            }
+            else
+            {
                 for (j = 0; customers[i].phone[j] != '\0'; j++)
                 {
                     if (customers[i].phone[j] < '0' ||
@@ -591,23 +640,27 @@ void RegisterCustomer(customer customers[], int *customerCount)
                         break;
                     }
                 }
+            }
 
-                if (valid == 0)
-                {
-                    printf("Invalid! Enter digits only.\n");
-                }
+            if (valid == 0)
+            {
+                printf("Invalid! Enter an exact 11-digit phone number (digits only, no spaces).\n");
+            }
 
-            } while (valid == 0);
+        } while (valid == 0);
+
+        // Increment customer count and auto-save to customers.txt
         (*customerCount)++;
-       if (saveCustomers(customers, *customerCount))
-{
-    printf("Customer registered and saved successfully!\n");
-}
-else
-{
-    printf("Customer registered but saving failed!\n");
-}
+        if (saveCustomers(customers, *customerCount))
+        {
+            printf("Customer registered and saved successfully!\n");
+        }
+        else
+        {
+            printf("Customer registered but saving failed!\n");
+        }
 
+        // Prompt to register another customer
         printf("Do you want to register another customer (Y/N)? ");
         scanf(" %c", &ch);
         clearInput();
@@ -623,6 +676,7 @@ void viewCustomer(customer customers[], int customerCount)
         return;
     }
 
+    // Look up customer index via findCustomer() and print profile if found
     printf("Enter Customer ID to view: ");
     int idx = findCustomer(customers, customerCount, getInt(1, 999999));
 
@@ -646,6 +700,7 @@ void deleteCustomer(customer customers[], int *customerCount)
         return;
     }
 
+    // Locate customer index and exit early if ID does not exist
     printf("Enter Customer ID to delete: ");
     int idx = findCustomer(customers, *customerCount, getInt(1, 999999));
 
@@ -655,6 +710,7 @@ void deleteCustomer(customer customers[], int *customerCount)
         return;
     }
 
+    // Shift subsequent customer structs left, decrement count, and save to file
     for (int j = idx; j < *customerCount - 1; j++)
         customers[j] = customers[j + 1];
 
@@ -674,6 +730,7 @@ float CalculateTotal(Tour *packages, int members, float *discount, float *tax)
 {
     float subtotal = packages->price * members; // price per package is for one person
 
+    // Determine discount based on transport mode (Train 5%, Aeroplane 10%, Bus 3%)
     if (packages->transport == 1)
         *discount = subtotal * 0.05;
     else if (packages->transport == 2)
@@ -681,6 +738,7 @@ float CalculateTotal(Tour *packages, int members, float *discount, float *tax)
     else
         *discount = subtotal * 0.03;
 
+    // Apply 9% tax after discount and return final payable total
     float discountedTotal = subtotal - *discount;
     *tax = discountedTotal * 0.09; // 9% tax
 
@@ -699,17 +757,20 @@ void BudgetFriendly(Tour packages[], int count)
     int budget, members, found = 0;
     float total, discount, tax;
 
+    // Read user's maximum budget and group size
     printf("\nEnter Your Budget (Rs.): ");
     budget = getInt(1, 100000000);
 
     printf("Enter Number of Members: ");
     members = getInt(1, 100);
 
+    // Check every package's final post-discount, post-tax cost against budget
     printf("\n---- BUDGET FRIENDLY PACKAGES (Incl. Discount & 9%% Tax) ----\n");
     for (int i = 0; i < count; i++)
     {
         total = CalculateTotal(&packages[i], members, &discount, &tax);
 
+        // Print full cost breakdown using ternary operators for transport/accommodation labels
         if (total <= budget)
         {
             printf("\nPackage ID    : %d", packages[i].packageID);
@@ -724,6 +785,7 @@ void BudgetFriendly(Tour packages[], int count)
         }
     }
 
+    // Notify user if no packages fit within the specified budget
     if (found == 0)
         printf("\nNo packages available within your budget!\n");
 }
@@ -731,12 +793,14 @@ void BudgetFriendly(Tour packages[], int count)
 /*----------- Generates a formatted tour bill for a registered customer -----------*/
 void generateBill(Tour packages[], int count, customer customers[], int customerCount)
 {
+    // Both a registered customer and an available package are required to bill
     if (count == 0 || customerCount == 0)
     {
         printf("Register at least one customer and add one package first!\n");
         return;
     }
 
+    // Verify customer ID and store matching index in cIdx
     printf("\n=== GENERATE TOUR BILL ===\n");
     printf("Enter Registered Customer ID: ");
     int cID = getInt(1, 999999);
@@ -747,6 +811,7 @@ void generateBill(Tour packages[], int count, customer customers[], int customer
         return;
     }
 
+    // Search packages array for the selected Package ID and store index in pIdx
     printf("Enter Package ID to Book: ");
     int pID = getInt(1, 999999);
     int pIdx = -1;
@@ -764,6 +829,7 @@ void generateBill(Tour packages[], int count, customer customers[], int customer
         return;
     }
 
+    // Read traveler count, compute itemized totals via CalculateTotal(), and print receipt
     printf("Enter Number of Travelers: ");
     int members = getInt(1, 100);
 
@@ -771,6 +837,7 @@ void generateBill(Tour packages[], int count, customer customers[], int customer
     float baseTotal = packages[pIdx].price * members;
     float finalBill = CalculateTotal(&packages[pIdx], members, &discount, &tax);
 
+    // Display formatted customer and package invoice
     printf("\n========================================\n");
     printf("           TOUR PACKAGE BILL            \n");
     printf("========================================\n");
@@ -792,6 +859,7 @@ void generateBill(Tour packages[], int count, customer customers[], int customer
 /*----------- Password-protected Admin View for all customers and packages -----------*/
 void adminViewAll(customer customers[], int customerCount, Tour packages[], int count)
 {
+    // Verify confidential admin password before listing all records
     char pass[30];
     printf("Enter confidential admin password: ");
     scanf(" %29s", pass);
@@ -803,6 +871,7 @@ void adminViewAll(customer customers[], int customerCount, Tour packages[], int 
         return;
     }
 
+    // Display summary lists of all registered customers and tour packages
     printf("\n--- ALL REGISTERED CUSTOMERS (%d) ---\n", customerCount);
     for (int i = 0; i < customerCount; i++)
         printf("ID: %d | Name: %s | Contact: %s\n", customers[i].customerID, customers[i].name, customers[i].phone);
@@ -816,6 +885,7 @@ void adminViewAll(customer customers[], int customerCount, Tour packages[], int 
 /*----------- Save all package records into a text file -----------*/
 int saveData(Tour packages[], int count)
 {
+    // Write all active packages to packages.txt in pipe-delimited ('|') format
     FILE *fp = fopen("packages.txt", "w");
     if (fp == NULL)
         return 0;
@@ -833,11 +903,13 @@ int saveData(Tour packages[], int count)
 /*----------- Loads previously saved package records from text file -----------*/
 void loadData(Tour packages[], int *count)
 {
+    // Read pipe-delimited package records from packages.txt into memory on startup
     FILE *fp = fopen("packages.txt", "r");
     if (fp == NULL)
         return;
 
     int i;
+    // Parse 6 pipe-delimited fields per line until EOF or incomplete record
     for (i = 0; i < MAX; i++)
     {
         if (fscanf(fp, "%d|%49[^|]|%d|%d|%d|%f",
@@ -852,6 +924,7 @@ void loadData(Tour packages[], int *count)
 /*----------- Saves customer records into a text file -----------*/
 int saveCustomers(customer customers[], int customerCount)
 {
+    // Write all registered customers to customers.txt in pipe-delimited ('|') format
     FILE *fp = fopen("customers.txt", "w");
     if (fp == NULL)
         return 0;
@@ -867,11 +940,13 @@ int saveCustomers(customer customers[], int customerCount)
 /*----------- Loads previously saved customer records from a text file -----------*/
 void loadCustomers(customer customers[], int *customerCount)
 {
+    // Read pipe-delimited customer records from customers.txt into memory on startup
     FILE *fp = fopen("customers.txt", "r");
     if (fp == NULL)
         return;
 
     int i;
+    // Parse 3 pipe-delimited fields per line until EOF or incomplete record
     for (i = 0; i < MAX; i++)
     {
         if (fscanf(fp, "%d|%49[^|]|%19[^\n]",
