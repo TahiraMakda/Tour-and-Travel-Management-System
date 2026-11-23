@@ -14,7 +14,6 @@
 */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define MAX 100
@@ -44,7 +43,7 @@ void getText(char text[]);
 
 void addPackage(Tour[], int *count);
 void displayPackages(Tour[], int count);
-void searchPackage(Tour[], int *count);
+void searchPackage(Tour[], int count);
 void updatePackage(Tour[], int count);
 void deletePackage(Tour[], int *count);
 
@@ -103,7 +102,7 @@ int main(void)
             displayPackages(packages, count);
             break;
         case 3:
-            searchPackage(packages, &count);
+            searchPackage(packages, count);
             break;
         case 4:
             updatePackage(packages, count);
@@ -353,12 +352,10 @@ void displayPackages(Tour packages[], int count)
 }
 
 /*----------- Searches for a package using ID -----------*/
-void searchPackage(Tour packages[], int *count)
+void searchPackage(Tour packages[], int count)
 {
     int packageID, found = 0;
-    char choice;
-
-    if (*count == 0)
+    if (count == 0)
     {
         printf("No packages available to search, first add package!\n");
         return;
@@ -367,7 +364,7 @@ void searchPackage(Tour packages[], int *count)
     printf("Enter package ID to search: ");
     packageID = getInt(1, 999999);
 
-    for (int i = 0; i < *count; i++)
+    for (int i = 0; i < count; i++)
     {
         if (packageID == packages[i].packageID)
         {
