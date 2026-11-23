@@ -299,9 +299,12 @@ void addPackage(Tour packages[], int *count)
         packages[i].price = getPrice();
 
         (*count)++;
-        saveData(packages, *count);
+        if(saveData(packages, *count)){
         printf("Package added and saved successfully!\n");
-
+        }
+     else{
+      printf("Package added but saving failed!\n);
+       }
         if (*count >= MAX)
         {
             printf("Storage is full!\n");
