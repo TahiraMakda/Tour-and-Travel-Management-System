@@ -303,7 +303,7 @@ void addPackage(Tour packages[], int *count)
         printf("Package added and saved successfully!\n");
         }
      else{
-      printf("Package added but saving failed!\n);
+      printf("Package added but saving failed!\n");
        }
         if (*count >= MAX)
         {
@@ -467,8 +467,14 @@ void updatePackage(Tour packages[], int count)
             printf("New Price per person (Rs.): ");
             packages[i].price = getPrice();
 
-            saveData(packages, count);
-            printf("Package updated and saved successfully!\n");
+           if (saveData(packages, count))
+{
+    printf("Package updated and saved successfully!\n");
+}
+else
+{
+    printf("Package updated but saving failed!\n");
+}
         }
         else
             printf("ID doesn't exist!\n");
@@ -506,8 +512,14 @@ void deletePackage(Tour packages[], int *count)
                     packages[j] = packages[j + 1];
 
                 (*count)--;
-                saveData(packages, *count);
-                printf("Package deleted successfully!\n");
+                if (saveData(packages, *count))
+{
+    printf("Package deleted and changes saved successfully!\n");
+}
+else
+{
+    printf("Package deleted but saving failed!\n");
+}
                 break;
             }
         }
@@ -587,8 +599,14 @@ void RegisterCustomer(customer customers[], int *customerCount)
 
             } while (valid == 0);
         (*customerCount)++;
-        saveCustomers(customers, *customerCount);
-        printf("Customer registered and saved successfully!\n");
+       if (saveCustomers(customers, *customerCount))
+{
+    printf("Customer registered and saved successfully!\n");
+}
+else
+{
+    printf("Customer registered but saving failed!\n");
+}
 
         printf("Do you want to register another customer (Y/N)? ");
         scanf(" %c", &ch);
@@ -641,8 +659,14 @@ void deleteCustomer(customer customers[], int *customerCount)
         customers[j] = customers[j + 1];
 
     (*customerCount)--;
-    saveCustomers(customers, *customerCount);
-    printf("Customer deleted successfully!\n");
+   if (saveCustomers(customers, *customerCount))
+{
+    printf("Customer deleted and changes saved successfully!\n");
+}
+else
+{
+    printf("Customer deleted but saving failed!\n");
+}
 }
 
 /*----------- Calculates total cost, transport-based discount, and 9% tax -----------*/
