@@ -171,7 +171,7 @@ int getInt(int min, int max)
         else
         {
             ch = getchar();
-            while (ch == ' ')
+            while (ch == ' ')    //It skips the spaces and reads the next character, which is Enter
                 ch = getchar();
             if (ch != '\n')
             {
