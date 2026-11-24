@@ -702,7 +702,7 @@ void deleteCustomer(customer customers[], int *customerCount)
 
     // Locate customer index and exit early if ID does not exist
     printf("Enter Customer ID to delete: ");
-    int idx = findCustomer(customers, *customerCount, getInt(1, 999999));
+    int idx = findCustomer(customers, customerCount, getInt(1, 999999));
 
     if (idx == -1)
     {
