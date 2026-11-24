@@ -323,7 +323,7 @@ void addPackage(Tour packages[], int *count)
 
         // Increment total package count and auto-save to packages.txt
         (*count)++;
-        if(saveData(packages, *count)){
+        if(saveData(packages, count)){
         printf("Package added and saved successfully!\n");
         }
      else{
